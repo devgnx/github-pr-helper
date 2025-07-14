@@ -171,10 +171,33 @@
 
   function loadLargeDiff($file) {
     return new Promise((resolve) => {
-      setTimeout(() => {
-        $file.find('.js-file-content .load-diff-button').click().blur();
+      const $loadButton = $file.find('.js-file-content .load-diff-button');
+      
+      // If there's no load button, the diff is already loaded
+      if ($loadButton.length === 0) {
         resolve();
-      }, 5);
+        return;
+      }
+      
+      // If diff-table already exists, no need to load
+      if ($file.find('.diff-table').length > 0) {
+        resolve();
+        return;
+      }
+      
+      // Click the load button
+      $loadButton.click().blur();
+      
+      // Wait for the diff-table to appear
+      const checkForDiffTable = () => {
+        if ($file.find('.diff-table').length > 0) {
+          resolve();
+        } else {
+          setTimeout(checkForDiffTable, 100);
+        }
+      };
+      
+      checkForDiffTable();
     });
   }
 
