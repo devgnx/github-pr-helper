@@ -161,7 +161,7 @@
       // For files with context lines, also remove left line numbers
       if (!allEmpty) {
         $file.find('.js-file-content tr').each(function () {
-          $(this).find('[data-line-number]+[data-line-number]').previous().remove(); // Remove left line number
+          $(this).find('[data-line-number]+[data-line-number]').prev().remove(); // Remove left line number
         });
       }
 
