@@ -14,14 +14,12 @@
     // hide left side columns for new files or additions-only changes
 
     waitLoading(() => {
-      alert("hello");
       loopFiles(function ($file) {
-        console.log($file)
         renderCommentCounters.call(this, $file);
         openViewedWithComments.call(this, $file);
         moveTests.call(this, $file);
         loadLargeDiff.call(this, $file);
-        hideEmptySideColumns.call(this, $file);
+        hideLeftSideForAdditionsOnly.call(this, $file);
       });
 
       foldAll();
@@ -136,26 +134,35 @@
     }, 5);
   }
 
-  function hideEmptySideColumns($file) {
-    const $left = $file.find('[data-split-side="left"]');
-    const $right = $file.find('[data-split-side="right"]');
+  function hideLeftSideForAdditionsOnly($file) {
+    const $leftCells = $file.find('[data-split-side="left"]');
+    const $rightCells = $file.find('[data-split-side="right"]');
 
-    if ($left.length === 0 || $right.length === 0) return;
+    if ($leftCells.length === 0 || $rightCells.length === 0) return;
 
-    let leftEmpty = true, rightEmpty = true;
-    $left.each(function () { if (!$(this).hasClass('blob-code-empty empty-cell')) { leftEmpty = false; return false; } });
-    $right.each(function () { if (!$(this).hasClass('blob-code-empty empty-cell')) { rightEmpty = false; return false; } });
+    let allEmpty = true;
+    $leftCells.each(function () {
+      if (!$(this).hasClass('blob-code-empty empty-cell')) {
+        allEmpty = false;
+        return false;
+      }
+    });
 
-    if (leftEmpty && $file.find('.blob-num.blob-num-empty.empty-cell').length > 0) {
+    if (allEmpty && $file.find('.blob-num.blob-num-empty.empty-cell').length > 0) {
       $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"].blob-code-empty.empty-cell').remove();
-      $file.find('.js-file-content tr td').each(function (i) { if (i % 2 === 0) $(this).css('width', '50px'); else $(this).css('width', 'calc(100% - 50px)'); });
-      $file.find('.js-file-content thead tr th, .js-file-content thead tr td').slice(0, 2).remove();
-      $file.find('.diff-table colgroup col').slice(0, 2).remove().end().find('col:last-child').attr('width', '100%');
-    } else if (rightEmpty && $file.find('[data-split-side="right"].blob-code-empty.empty-cell').length > 0) {
-      $file.find('[data-split-side="right"].blob-code-empty.empty-cell').remove();
-      $file.find('.js-file-content tr').each(function () { const $c = $(this).find('td'); if ($c.length === 3) { $c.eq(0).css('width', '50px'); $c.eq(1).css('width', 'calc(100% - 50px)'); $c.eq(2).remove(); } });
-      $file.find('.js-file-content thead tr th, .js-file-content thead tr td').slice(-2).remove();
-      $file.find('.diff-table colgroup col').slice(-2).remove().end().find('col:last-child').attr('width', '100%');
+      $file.find('.js-file-content table').css('table-layout', 'fixed');
+      $file.find('.js-file-content tr').each(function () {
+        const $cells = $(this).find('td');
+        if ($cells.length === 2) {
+          $cells.eq(0).css('width', '50px');
+          $cells.eq(1).css('width', 'calc(100% - 50px)');
+        }
+      });
+      $file.find('.js-file-content thead tr').each(function () {
+        $(this).find('th, td').slice(0, 2).remove();
+      });
+      $file.find('.diff-table colgroup col').slice(0, 2).remove();
+      $file.find('.diff-table col:last-child').attr('width', '100%');
     }
   }
 
