@@ -15,11 +15,11 @@
 
     waitLoading(() => {
       loopFiles(function ($file) {
+        hideLeftSideForAdditionsOnly.call(this, $file);
         renderCommentCounters.call(this, $file);
         openViewedWithComments.call(this, $file);
         moveTests.call(this, $file);
         loadLargeDiff.call(this, $file);
-        hideLeftSideForAdditionsOnly.call(this, $file);
       });
 
       foldAll();
@@ -113,52 +113,50 @@
       'max-width': width
     });
 
-    // After applying normal toggle logic, check if we need to override for readability
+    // After basic toggle, check if we need to override for readability
     if ($actualFile.hasClass('wide')) {
-      const $copilotEntry = $actualFile.parents('copilot-diff-entry');
-      const $filesInEntry = $copilotEntry.find('[data-details-container-group="file"]');
-      
-      if ($filesInEntry.length > 1) {
-        let filesWithBothSides = 0;
-        $filesInEntry.each(function() {
-          const $currentFile = $(this);
-          const $leftCells = $currentFile.find('[data-split-side="left"]');
-          const $rightCells = $currentFile.find('[data-split-side="right"]');
-          
-          if ($leftCells.length > 0 && $rightCells.length > 0) {
-            // Check if there are actual changes (not just empty cells)
-            const hasLeftChanges = $leftCells.filter('.blob-code-deletion').length > 0 || 
-                                   $leftCells.filter(':not(.blob-code-empty)').length > 0;
-            const hasRightChanges = $rightCells.filter('.blob-code-addition').length > 0 || 
-                                    $rightCells.filter(':not(.blob-code-empty)').length > 0;
-            
-            if (hasLeftChanges && hasRightChanges) {
-              filesWithBothSides++;
-            }
-          }
-        });
-        
-        // If multiple files have both sides, override to full width for better readability
-        if (filesWithBothSides > 1) {
-          $copilotEntry.css({
-            'display': 'block',
-            'flex-wrap': 'nowrap',
-            'gap': '10px',
-            'margin-left': '-22px',
-            'margin-right': '-22px'
-          });
-          
-          $filesInEntry.css({
-            'flex': '1 100%',
-            'max-width': '100%'
-          });
-        }
-      }
+      handleFullWidthOverride($actualFile);
     }
 
     setTimeout(() => {
       window.scrollTo(0, $fileParent.find('.js-file-content').offset().top - 60);
     });
+  }
+
+  function handleFullWidthOverride($actualFile) {
+    const $copilotEntry = $actualFile.parents('copilot-diff-entry');
+    const $filesInEntry = $copilotEntry.find('[data-details-container-group="file"]');
+
+    if ($filesInEntry.length <= 1) return;
+
+    let filesWithBothSides = 0;
+    $filesInEntry.each(function () {
+      const $currentFile = $(this);
+      const $leftCells = $currentFile.find('[data-split-side="left"]');
+      const $rightCells = $currentFile.find('[data-split-side="right"]');
+
+      if ($leftCells.length > 0 && $rightCells.length > 0) {
+        // Check if there are actual changes (not just empty cells)
+        const hasLeftChanges = $leftCells.filter('.blob-code-deletion').length > 0;
+        const hasRightChanges = $rightCells.filter('.blob-code-addition').length > 0;
+
+        if (hasLeftChanges && hasRightChanges) {
+          filesWithBothSides++;
+        }
+      }
+    });
+
+    // If multiple files have both sides, override to full width for better readability
+    if (filesWithBothSides > 1) {
+      $copilotEntry.css({
+        'display': 'block'
+      });
+
+      $filesInEntry.css({
+        'flex': '1 100%',
+        'max-width': '100%'
+      });
+    }
   }
 
   function highlightTestFile($file) {
