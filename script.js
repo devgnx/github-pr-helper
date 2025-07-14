@@ -8,7 +8,7 @@
 
     // TODO: sum lines added & removed from .sr-only on each file (useful for mixed commits PR)
     // i.e.: 4 changes: 2 additions & 2 deletions
-
+    
     // TODO: add only branch name in clipboard when clicking on 'copy branch name' button
     // TODO: have a shortcut to switch between split & unifed diffs
     // hide left side columns for new files or additions-only changes
@@ -137,28 +137,42 @@
   function hideLeftSideForAdditionsOnly($file) {
     const $leftCells = $file.find('[data-split-side="left"]');
     const $rightCells = $file.find('[data-split-side="right"]');
-
+    
     if ($leftCells.length === 0 || $rightCells.length === 0) return;
-
+    
+    // Check if left side is completely empty (new files)
     let allEmpty = true;
-    $leftCells.each(function () {
+    $leftCells.each(function() {
       if (!$(this).hasClass('blob-code-empty empty-cell')) {
         allEmpty = false;
         return false;
       }
     });
-
-    if (allEmpty && $file.find('.blob-num.blob-num-empty.empty-cell').length > 0) {
+    
+    // Check if left side has no deletions (only context lines, no actual changes)
+    let hasLeftChanges = $leftCells.filter('.blob-code-deletion').length > 0;
+    
+    if ((allEmpty && $file.find('.blob-num.blob-num-empty.empty-cell').length > 0) || 
+        (!hasLeftChanges && $rightCells.filter('.blob-code-addition').length > 0)) {
       $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"].blob-code-empty.empty-cell').remove();
+      
+      // For files with context lines, remove all left side cells
+      if (!allEmpty) {
+        $file.find('[data-split-side="left"]').remove();
+        $file.find('.js-file-content tr').each(function() {
+          $(this).find('td').first().remove(); // Remove left line number
+        });
+      }
+      
       $file.find('.js-file-content table').css('table-layout', 'fixed');
-      $file.find('.js-file-content tr').each(function () {
+      $file.find('.js-file-content tr').each(function() {
         const $cells = $(this).find('td');
         if ($cells.length === 2) {
           $cells.eq(0).css('width', '50px');
           $cells.eq(1).css('width', 'calc(100% - 50px)');
         }
       });
-      $file.find('.js-file-content thead tr').each(function () {
+      $file.find('.js-file-content thead tr').each(function() {
         $(this).find('th, td').slice(0, 2).remove();
       });
       $file.find('.diff-table colgroup col').slice(0, 2).remove();
