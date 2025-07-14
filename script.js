@@ -60,7 +60,7 @@
     }
 
     highlightTestFile($testFile);
-    toggleExpand($testFile);
+    // toggleExpand($testFile);
   }
 
   function isTestFile($file) {
