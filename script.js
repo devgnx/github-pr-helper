@@ -172,21 +172,8 @@
   function loadLargeDiff($file) {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const $diffContent = $file.find('.js-file-content');
-        const $diffButton = $diffContent.find('.load-diff-button');
-
-        if ($diffButton.length === 0) {
-          resolve();
-        }
-
-        $diffButton.click().blur();
-
-        const checkLoaded = setInterval(() => {
-          if ($diffContent.find('.load-diff-button').length === 0) {
-            clearInterval(checkLoaded);
-            resolve();
-          }
-        }, 1000);
+        $file.find('.js-file-content .load-diff-button').click().blur();
+        resolve();
       }, 5);
     });
   }
