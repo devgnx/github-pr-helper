@@ -182,7 +182,7 @@
         $diffButton.click().blur();
 
         const checkLoaded = setInterval(() => {
-          if ($diffContent.find('.blob-code-inner').length > 0) {
+          if ($diffContent.find('.load-diff-button').length === 0) {
             clearInterval(checkLoaded);
             resolve();
           }
