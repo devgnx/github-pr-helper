@@ -15,11 +15,11 @@
 
     waitLoading(() => {
       loopFiles(function ($file) {
-        hideLeftSideForAdditionsOnly.call(this, $file);
         renderCommentCounters.call(this, $file);
         openViewedWithComments.call(this, $file);
         moveTests.call(this, $file);
         loadLargeDiff.call(this, $file);
+        hideLeftSideForAdditionsOnly.call(this, $file);
       });
 
       foldAll();
@@ -97,13 +97,27 @@
     if ($actualFile.hasClass('wide')) {
       display = 'flex';
       width = '50%';
-      
-      // Check if both files have left and right sides (deletions and additions)
-      // If so, make them full width to avoid 4 columns that are hard to read
+    }
+
+    // Expand actual & test files
+    $actualFile.parents('copilot-diff-entry').css({
+      display,
+      'flex-wrap': 'nowrap',
+      'gap': '10px',
+      'margin-left': '-22px',
+      'margin-right': '-22px'
+    });
+
+    $([$actualFile.get(0), $testFile.get(0)]).css({
+      'flex': `1 ${width}`,
+      'max-width': width
+    });
+
+    // After applying normal toggle logic, check if we need to override for readability
+    if ($actualFile.hasClass('wide')) {
       const $copilotEntry = $actualFile.parents('copilot-diff-entry');
       const $filesInEntry = $copilotEntry.find('[data-details-container-group="file"]');
       
-      let hasMultipleFilesWithBothSides = false;
       if ($filesInEntry.length > 1) {
         let filesWithBothSides = 0;
         $filesInEntry.each(function() {
@@ -124,29 +138,23 @@
           }
         });
         
-        hasMultipleFilesWithBothSides = filesWithBothSides > 1;
-      }
-      
-      // If multiple files have both sides, make them full width instead of 50%
-      if (hasMultipleFilesWithBothSides) {
-        display = 'block';
-        width = '100%';
+        // If multiple files have both sides, override to full width for better readability
+        if (filesWithBothSides > 1) {
+          $copilotEntry.css({
+            'display': 'block',
+            'flex-wrap': 'nowrap',
+            'gap': '10px',
+            'margin-left': '-22px',
+            'margin-right': '-22px'
+          });
+          
+          $filesInEntry.css({
+            'flex': '1 100%',
+            'max-width': '100%'
+          });
+        }
       }
     }
-
-    // Expand actual & test files
-    $actualFile.parents('copilot-diff-entry').css({
-      display,
-      'flex-wrap': 'nowrap',
-      'gap': '10px',
-      'margin-left': '-22px',
-      'margin-right': '-22px'
-    });
-
-    $([$actualFile.get(0), $testFile.get(0)]).css({
-      'flex': `1 ${width}`,
-      'max-width': width
-    });
 
     setTimeout(() => {
       window.scrollTo(0, $fileParent.find('.js-file-content').offset().top - 60);
