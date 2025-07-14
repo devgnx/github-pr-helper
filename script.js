@@ -325,19 +325,30 @@
     foldNextAction($('.Details--on[data-details-container-group="file"]'), actions.INITIAL);
   };
 
-  $(initialize);
-  $(document).on('click', '.stale-files-tab-link', initialize);
-  //$(document).on('click', '.tabnav-tab:contains("Files changed")', () => setTimeout(initialize, 2000));
-  $(document).on('click', '[data-details-container-group="file"]', function (e) { e.ctrlKey && fold($(this)); });
-  $(document).on('dblclick', '[data-details-container-group="file"] .file-header', function (e) { foldCurrent(e); });
-  $(document).on("keydown", (e) => {
-    const combo = e.ctrlKey && e.shiftKey;
-    if (combo && e.key.toUpperCase() === "F") {
-      foldSequence();
-    } else if (e.key === " ") {
-      combo ? scrollNextComment(e) : foldCurrent(e);
-    } else if (combo && e.key.toUpperCase() === "S") {
-      showOnlyCurrentCommits();
+  jQueryReady = function ($) {
+    $(initialize);
+    $(document).on('click', '.stale-files-tab-link', initialize);
+    //$(document).on('click', '.tabnav-tab:contains("Files changed")', () => setTimeout(initialize, 2000));
+    $(document).on('click', '[data-details-container-group="file"]', function (e) { e.ctrlKey && fold($(this)); });
+    $(document).on('dblclick', '[data-details-container-group="file"] .file-header', function (e) { foldCurrent(e); });
+    $(document).on("keydown", (e) => {
+      const combo = e.ctrlKey && e.shiftKey;
+      if (combo && e.key.toUpperCase() === "F") {
+        foldSequence();
+      } else if (e.key === " ") {
+        combo ? scrollNextComment(e) : foldCurrent(e);
+      } else if (combo && e.key.toUpperCase() === "S") {
+        showOnlyCurrentCommits();
+      }
+    });
+  }
+
+  // wait until jQuery is loaded
+  function waitForJQuery(callback) {
+    if (typeof jQuery !== 'undefined') {
+      jQueryReady(jQuery);
+    } else {
+      setTimeout(() => waitForJQuery(callback), 100);
     }
-  });
+  }
 })();
