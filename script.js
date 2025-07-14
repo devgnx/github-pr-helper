@@ -73,12 +73,6 @@
   }
 
   function toggleExpand($file) {
-    const $copilotEntry = $actualFile.parents('copilot-diff-entry');
-
-    if ($copilotEntry.hasClass('overridden')) {
-      return;
-    }
-
     const $fileParent = $file.closest('[data-details-container-group="file"]');
     let $testFile;
     let $actualFile;
@@ -89,6 +83,11 @@
     } else {
       $actualFile = $fileParent;
       $testFile = $actualFile.next();
+    }
+
+    const $copilotEntry = $actualFile.parents('copilot-diff-entry');
+    if ($copilotEntry.hasClass('overridden')) {
+      return;
     }
 
     $actualFile.toggleClass('wide');
