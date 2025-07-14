@@ -116,7 +116,7 @@
 
     // After basic toggle, check if we need to override for readability
     if ($actualFile.length > 0 && $testFile.length > 0) {
-      handleFullWidthOverride($actualFile);
+      handleFullWidthOverride($copilotEntry);
     }
 
     setTimeout(() => {
@@ -124,7 +124,7 @@
     });
   }
 
-  function handleFullWidthOverride($actualFile) {
+  function handleFullWidthOverride($copilotEntry) {
     const $filesInEntry = $copilotEntry.find('[data-details-container-group="file"]');
 
     if ($filesInEntry.length <= 1) return;
