@@ -74,9 +74,9 @@
 
   function toggleExpand($file) {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('diff') === 'split') {
-      return;
-    }
+    // if (urlParams.get('diff') === 'split') {
+    //   return;
+    // }
 
     const $fileParent = $file.closest('[data-details-container-group="file"]');
     let $testFile;
