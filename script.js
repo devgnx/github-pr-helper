@@ -97,6 +97,41 @@
     if ($actualFile.hasClass('wide')) {
       display = 'flex';
       width = '50%';
+      
+      // Check if both files have left and right sides (deletions and additions)
+      // If so, make them full width to avoid 4 columns that are hard to read
+      const $copilotEntry = $actualFile.parents('copilot-diff-entry');
+      const $filesInEntry = $copilotEntry.find('[data-details-container-group="file"]');
+      
+      let hasMultipleFilesWithBothSides = false;
+      if ($filesInEntry.length > 1) {
+        let filesWithBothSides = 0;
+        $filesInEntry.each(function() {
+          const $currentFile = $(this);
+          const $leftCells = $currentFile.find('[data-split-side="left"]');
+          const $rightCells = $currentFile.find('[data-split-side="right"]');
+          
+          if ($leftCells.length > 0 && $rightCells.length > 0) {
+            // Check if there are actual changes (not just empty cells)
+            const hasLeftChanges = $leftCells.filter('.blob-code-deletion').length > 0 || 
+                                   $leftCells.filter(':not(.blob-code-empty)').length > 0;
+            const hasRightChanges = $rightCells.filter('.blob-code-addition').length > 0 || 
+                                    $rightCells.filter(':not(.blob-code-empty)').length > 0;
+            
+            if (hasLeftChanges && hasRightChanges) {
+              filesWithBothSides++;
+            }
+          }
+        });
+        
+        hasMultipleFilesWithBothSides = filesWithBothSides > 1;
+      }
+      
+      // If multiple files have both sides, make them full width instead of 50%
+      if (hasMultipleFilesWithBothSides) {
+        display = 'block';
+        width = '100%';
+      }
     }
 
     // Expand actual & test files
