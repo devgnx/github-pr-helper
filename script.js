@@ -18,8 +18,9 @@
         renderCommentCounters.call(this, $file);
         openViewedWithComments.call(this, $file);
         moveTests.call(this, $file);
-        loadLargeDiff.call(this, $file);
-        hideLeftSideForAdditionsOnly.call(this, $file);
+        loadLargeDiff.call(this, $file).then(() => {
+          hideLeftSideForAdditionsOnly.call(this, $file);
+        });
       });
 
       foldAll();
@@ -169,9 +170,12 @@
   }
 
   function loadLargeDiff($file) {
-    setTimeout(() => {
-      $file.find('.js-file-content .load-diff-button').click().blur();
-    }, 5);
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        $file.find('.js-file-content .load-diff-button').click().blur();
+        resolve();
+      }, 5);
+    });
   }
 
   function hideLeftSideForAdditionsOnly($file) {
