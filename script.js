@@ -17,10 +17,10 @@
       loopFiles(function ($file) {
         renderCommentCounters.call(this, $file);
         openViewedWithComments.call(this, $file);
-        moveTests.call(this, $file);
         loadLargeDiff.call(this, $file).then(() => {
-          hideLeftSideForAdditionsOnly.call(this, $file);
+          moveTests.call(this, $file);
         });
+        hideLeftSideForAdditionsOnly.call(this, $file);
       });
 
       foldAll();
