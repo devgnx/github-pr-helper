@@ -154,24 +154,47 @@
     
     if ((allEmpty && $file.find('.blob-num.blob-num-empty.empty-cell').length > 0) || 
         (!hasLeftChanges && $rightCells.filter('.blob-code-addition').length > 0)) {
-      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"].blob-code-empty.empty-cell').remove();
       
-      // For files with context lines, remove all left side cells
+      // Remove all left side elements
+      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').remove();
+      
+      // For files with context lines, also remove left line numbers
       if (!allEmpty) {
-        $file.find('[data-split-side="left"]').remove();
         $file.find('.js-file-content tr').each(function() {
           $(this).find('td').first().remove(); // Remove left line number
         });
       }
       
+      // Clean up any remaining empty td elements
+      $file.find('.js-file-content tr').each(function() {
+        const $row = $(this);
+        const $cells = $row.find('td');
+        
+        // Remove empty td elements (those without content or classes)
+        $cells.each(function() {
+          const $cell = $(this);
+          if ($cell.html().trim() === '' && !$cell.hasClass('blob-code') && !$cell.hasClass('blob-num')) {
+            $cell.remove();
+          }
+        });
+      });
+      
+      // Update table layout
       $file.find('.js-file-content table').css('table-layout', 'fixed');
+      
+      // Set proper widths for remaining cells
       $file.find('.js-file-content tr').each(function() {
         const $cells = $(this).find('td');
         if ($cells.length === 2) {
           $cells.eq(0).css('width', '50px');
           $cells.eq(1).css('width', 'calc(100% - 50px)');
+        } else if ($cells.length === 1) {
+          // For hunk headers that span the full width
+          $cells.eq(0).css('width', '100%');
         }
       });
+      
+      // Update table structure
       $file.find('.js-file-content thead tr').each(function() {
         $(this).find('th, td').slice(0, 2).remove();
       });
