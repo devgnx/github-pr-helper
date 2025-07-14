@@ -172,8 +172,21 @@
   function loadLargeDiff($file) {
     return new Promise((resolve) => {
       setTimeout(() => {
-        $file.find('.js-file-content .load-diff-button').click().blur();
-        resolve();
+        const $diffContent = $file.find('.js-file-content');
+        const $diffButton = $diffContent.find('.load-diff-button');
+
+        if ($diffButton.length === 0) {
+          resolve();
+        }
+
+        $diffButton.click().blur();
+
+        const checkLoaded = setInterval(() => {
+          if ($diffContent.find('.blob-code-inner').length > 0) {
+            clearInterval(checkLoaded);
+            resolve();
+          }
+        }, 100);
       }, 5);
     });
   }
