@@ -60,7 +60,7 @@
     }
 
     highlightTestFile($testFile);
-    // toggleExpand($testFile);
+    toggleExpand($testFile);
   }
 
   function isTestFile($file) {
@@ -361,7 +361,7 @@
       window.history.pushState({}, '', `?${params.toString()}`);
     }
 
-    loopFiles(toggleExpand)
+    // loopFiles(toggleExpand)
   }
 
   window.loopFiles = (callback) => {
