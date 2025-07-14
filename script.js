@@ -140,6 +140,10 @@
         const hasLeftChanges = $leftCells.filter('.blob-code-deletion').length > 0;
         const hasRightChanges = $rightCells.filter('.blob-code-addition').length > 0;
 
+        if ($currentFile.find('.Link--primary.Truncate-text').text() === 'soci/spec/unit/classes/Soci/SuggestedEdits/SuggestedEditsRepositoryTest.php') {
+          debugger;
+        }
+
         if (hasLeftChanges && hasRightChanges) {
           filesWithBothSides++;
         }
