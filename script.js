@@ -172,22 +172,22 @@
   function loadLargeDiff($file) {
     return new Promise((resolve) => {
       const $loadButton = $file.find('.js-file-content .load-diff-button');
-      
+
       // If there's no load button, the diff is already loaded
       if ($loadButton.length === 0) {
         resolve();
         return;
       }
-      
+
       // If diff-table already exists, no need to load
       if ($file.find('.diff-table').length > 0) {
         resolve();
         return;
       }
-      
+
       // Click the load button
       $loadButton.click().blur();
-      
+
       // Wait for the diff-table to appear
       const checkForDiffTable = () => {
         if ($file.find('.diff-table').length > 0) {
@@ -196,7 +196,7 @@
           setTimeout(checkForDiffTable, 100);
         }
       };
-      
+
       checkForDiffTable();
     });
   }
@@ -389,6 +389,33 @@
 
     loopFiles(toggleExpand);
   }
+
+  function injectCss(css) {
+    const style = document.createElement('style');
+    style.type = 'text/css';
+    style.appendChild(document.createTextNode(css));
+    document.head.appendChild(style);
+  }
+
+  // Inject CSS styles for the script functionality
+  injectCss(`
+    copilot-diff-entry.overridden {
+      position: relative;
+    }
+    
+    copilot-diff-entry.overridden::after {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      display: block;
+      content: "";
+      border: 2px solid purple;
+      pointer-events: none;
+      z-index: 1;
+    }
+  `);
 
   window.loopFiles = (callback) => {
     $('.Link--primary.Truncate-text').each(function () {
