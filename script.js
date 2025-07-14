@@ -14,7 +14,9 @@
     // hide left side columns for new files or additions-only changes
 
     waitLoading(() => {
+      alert("hello");
       loopFiles(function ($file) {
+        console.log($file)
         renderCommentCounters.call(this, $file);
         openViewedWithComments.call(this, $file);
         moveTests.call(this, $file);
