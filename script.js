@@ -73,10 +73,11 @@
   }
 
   function toggleExpand($file) {
-    const urlParams = new URLSearchParams(window.location.search);
-    // if (urlParams.get('diff') === 'split') {
-    //   return;
-    // }
+    const $copilotEntry = $actualFile.parents('copilot-diff-entry');
+
+    if ($copilotEntry.hasClass('overridden')) {
+      return;
+    }
 
     const $fileParent = $file.closest('[data-details-container-group="file"]');
     let $testFile;
@@ -100,7 +101,7 @@
     }
 
     // Expand actual & test files
-    $actualFile.parents('copilot-diff-entry').css({
+    $copilotEntry.css({
       display,
       'flex-wrap': 'nowrap',
       'gap': '10px',
@@ -124,7 +125,6 @@
   }
 
   function handleFullWidthOverride($actualFile) {
-    const $copilotEntry = $actualFile.parents('copilot-diff-entry');
     const $filesInEntry = $copilotEntry.find('[data-details-container-group="file"]');
 
     if ($filesInEntry.length <= 1) return;
@@ -148,7 +148,7 @@
 
     // If multiple files have both sides, override to full width for better readability
     if (filesWithBothSides > 0) {
-      $copilotEntry.css({
+      $copilotEntry.addClass('overridden').css({
         'display': 'block'
       });
 
@@ -361,7 +361,7 @@
       window.history.pushState({}, '', `?${params.toString()}`);
     }
 
-    // loopFiles(toggleExpand)
+    loopFiles(toggleExpand);
   }
 
   window.loopFiles = (callback) => {
