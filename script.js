@@ -95,7 +95,7 @@
 
     let display = 'block';
     let width = '100%';
-    if ($actualFile.hasClass('wide') && $testFile.length > 0) {
+    if ($testFile.length > 0) {
       display = 'flex';
       width = '50%';
     }
