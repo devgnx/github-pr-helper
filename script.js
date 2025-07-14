@@ -15,11 +15,11 @@
 
     waitLoading(() => {
       loopFiles(function ($file) {
+        hideLeftSideForAdditionsOnly.call(this, $file);
         renderCommentCounters.call(this, $file);
         openViewedWithComments.call(this, $file);
         moveTests.call(this, $file);
         loadLargeDiff.call(this, $file);
-        hideLeftSideForAdditionsOnly.call(this, $file);
       });
 
       foldAll();
