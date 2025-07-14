@@ -159,11 +159,11 @@
       $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').remove();
       
       // For files with context lines, also remove left line numbers
-      if (!allEmpty) {
-        $file.find('.js-file-content tr').each(function() {
-          $(this).find('td').first().remove(); // Remove left line number
-        });
-      }
+      // if (!allEmpty) {
+      //   $file.find('.js-file-content tr').each(function() {
+      //     $(this).find('td').first().remove(); // Remove left line number
+      //   });
+      // }
       
       // Clean up any remaining empty td elements
       $file.find('.js-file-content tr').each(function() {
