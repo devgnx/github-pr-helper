@@ -346,9 +346,11 @@
   // wait until jQuery is loaded
   function waitForJQuery(callback) {
     if (typeof jQuery !== 'undefined') {
-      jQueryReady(jQuery);
+      callback(jQuery);
     } else {
       setTimeout(() => waitForJQuery(callback), 100);
     }
   }
+
+  waitForJQuery(jQueryReady);
 })();
