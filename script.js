@@ -147,7 +147,7 @@
     });
 
     // If multiple files have both sides, override to full width for better readability
-    if (filesWithBothSides > 1) {
+    if (filesWithBothSides > 0) {
       $copilotEntry.css({
         'display': 'block'
       });
