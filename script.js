@@ -186,7 +186,7 @@
             clearInterval(checkLoaded);
             resolve();
           }
-        }, 100);
+        }, 1000);
       }, 5);
     });
   }
