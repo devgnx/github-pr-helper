@@ -95,7 +95,7 @@
 
     let display = 'block';
     let width = '100%';
-    if ($testFile.length > 0) {
+    if ($actualFile.length > 0 && $testFile.length > 0) {
       display = 'flex';
       width = '50%';
     }
