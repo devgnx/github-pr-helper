@@ -449,6 +449,26 @@
       pointer-events: none;
       z-index: 1;
     }
+    
+    /* Fix comment forms in side-by-side layout */
+    copilot-diff-entry.has-comment-form {
+      display: block !important;
+    }
+    
+    copilot-diff-entry.has-comment-form > [data-details-container-group="file"] {
+      flex: 1 100% !important;
+      max-width: 100% !important;
+    }
+    
+    /* Fix expanded lines in side-by-side layout */
+    copilot-diff-entry.has-expanded-lines {
+      display: block !important;
+    }
+    
+    copilot-diff-entry.has-expanded-lines > [data-details-container-group="file"] {
+      flex: 1 100% !important;
+      max-width: 100% !important;
+    }
   `);
 
   window.loopFiles = (callback) => {
@@ -490,6 +510,86 @@
     foldNextAction($('.Details--on[data-details-container-group="file"]'), actions.INITIAL);
   };
 
+  // Detect and handle comment forms and expand operations
+  function setupCommentFormDetection() {
+    // Watch for comment forms being added/removed
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) { // Element node
+            const $node = $(node);
+            // Check if this is a comment form or contains one
+            if ($node.hasClass('js-inline-comment-form') || $node.find('.js-inline-comment-form').length > 0) {
+              const $copilotEntry = $node.closest('copilot-diff-entry');
+              if ($copilotEntry.length > 0) {
+                $copilotEntry.addClass('has-comment-form');
+              }
+            }
+            
+            // Check if expanded lines are being added (tr elements in diff table)
+            if ($node.is('tr') || $node.find('tr').length > 0) {
+              const $copilotEntry = $node.closest('copilot-diff-entry');
+              if ($copilotEntry.length > 0 && $copilotEntry.css('display') === 'flex') {
+                // Temporarily add class to handle expand operations
+                $copilotEntry.addClass('has-expanded-lines');
+                
+                // Remove after content has settled
+                setTimeout(() => {
+                  $copilotEntry.removeClass('has-expanded-lines');
+                }, 500);
+              }
+            }
+          }
+        });
+        
+        mutation.removedNodes.forEach((node) => {
+          if (node.nodeType === 1) { // Element node
+            const $node = $(node);
+            if ($node.hasClass('js-inline-comment-form') || $node.find('.js-inline-comment-form').length > 0) {
+              const $copilotEntry = $node.closest('copilot-diff-entry');
+              if ($copilotEntry.length > 0) {
+                // Check if there are any remaining comment forms
+                setTimeout(() => {
+                  if ($copilotEntry.find('.js-inline-comment-form').length === 0) {
+                    $copilotEntry.removeClass('has-comment-form');
+                  }
+                }, 100);
+              }
+            }
+          }
+        });
+      });
+    });
+
+    // Observe the entire diff container
+    const diffContainer = document.querySelector('#files');
+    if (diffContainer) {
+      observer.observe(diffContainer, {
+        childList: true,
+        subtree: true
+      });
+    }
+  }
+  
+  // Handle expand button clicks
+  function setupExpandButtonHandling() {
+    $(document).on('click', '.js-expand-full, .js-expand-up, .js-expand-down', function() {
+      const $button = $(this);
+      const $file = $button.closest('[data-details-container-group="file"]');
+      const $copilotEntry = $file.parents('copilot-diff-entry');
+      
+      if ($copilotEntry.length > 0) {
+        // Add class to temporarily disable flex layout
+        $copilotEntry.addClass('has-expanded-lines');
+        
+        // Remove after a delay to allow content to load
+        setTimeout(() => {
+          $copilotEntry.removeClass('has-expanded-lines');
+        }, 1000);
+      }
+    });
+  }
+
   jQueryReady = function ($) {
     $(initialize);
     $(document).on('click', '.stale-files-tab-link', initialize);
@@ -506,6 +606,10 @@
         showOnlyCurrentCommits();
       }
     });
+    
+    // Setup comment form detection and expand button handling after page loads
+    setupCommentFormDetection();
+    setupExpandButtonHandling();
   }
 
   // wait until jQuery is loaded
