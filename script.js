@@ -18,9 +18,9 @@
         renderCommentCounters.call(this, $file);
         openViewedWithComments.call(this, $file);
         loadLargeDiff.call(this, $file).then(() => {
+          hideLeftSideForAdditionsOnly.call(this, $file);
           moveTests.call(this, $file);
         });
-        hideLeftSideForAdditionsOnly.call(this, $file);
       });
 
       foldAll();
@@ -58,12 +58,10 @@
 
     if ($actualFile.length) {
       $testFile.insertAfter($actualFile);
-      highlightTestFile($testFile);
-      toggleExpand($testFile);
-    } else {
-      // Standalone test file with no matching actual file - just highlight it
-      highlightTestFile($testFile);
     }
+
+    highlightTestFile($testFile);
+    toggleExpand($testFile);
   }
 
   function isTestFile($file) {
@@ -151,16 +149,13 @@
       return false;
     }
 
-    // Check if filenames are related
+    // Check if filenames are related using the same logic as moveTests
     const actualFileName = getFileName($actualFile.find('.Link--primary.Truncate-text'));
     const testFileName = getFileName($testFile.find('.Link--primary.Truncate-text'));
     
-    // Extract base name from test file
-    const testBaseName = testFileName.split('/').slice(-2).join('/').replace(/(Test|\.test)(\.php|\.js)/g, '$2');
-    
-    // Check if actual file matches the test's base name
-    return (new RegExp(testBaseName, "i")).test(actualFileName) || 
-           (new RegExp(actualFileName.split('/').pop(), "i")).test(testFileName);
+    // Use the same pattern matching as moveTests
+    const expectedPattern = testFileName.split('/').slice(-2).join('/').replace(/(Test|\.test)(\.php|\.js)/g, '$2');
+    return (new RegExp(expectedPattern, "i")).test(actualFileName);
   }
 
   function handleFullWidthOverride($copilotEntry) {
