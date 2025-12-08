@@ -119,43 +119,7 @@
 
     // Expand actual & test files
     $copilotEntry.css({
-      display,// https://gist.github.com/devgnx/de133f345d43d8389b68e2116cdbeaba
-
-(function () {
-  function initialize() {
-    if (showOnlyCurrentCommits()) {
-      return;
-    }
-
-    // TODO: sum lines added & removed from .sr-only on each file (useful for mixed commits PR)
-    // i.e.: 4 changes: 2 additions & 2 deletions
-
-    // TODO: add only branch name in clipboard when clicking on 'copy branch name' button
-    // TODO: have a shortcut to switch between split & unifed diffs
-    // hide left side columns for new files or additions-only changes
-
-    waitLoading(() => {
-      loopFiles(function ($file) {
-        renderCommentCounters.call(this, $file);
-        openViewedWithComments.call(this, $file);
-        loadLargeDiff.call(this, $file).then(() => {
-          moveTests.call(this, $file);
-        });
-        hideLeftSideForAdditionsOnly.call(this, $file);
-      });
-
-      foldAll();
-      toggleDiffView();
-    })
-  }
-
-  function waitLoading(callback) {
-    let previousTimeout = setTimeout(() => {
-      clearTimeout(previousTimeout);
-      isStillLoading() ? waitLoading(callback) : callback();
-    }, 200);
-  }
-})();
+      display,
       'flex-wrap': 'nowrap',
       'gap': '10px',
       'margin-left': '-22px',
