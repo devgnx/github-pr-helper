@@ -510,7 +510,7 @@
     foldNextAction($('.Details--on[data-details-container-group="file"]'), actions.INITIAL);
   };
 
-  // Detect and handle comment forms and expand operations
+  // Detect and handle comment forms
   function setupCommentFormDetection() {
     // Watch for comment forms being added/removed
     const observer = new MutationObserver((mutations) => {
@@ -522,21 +522,23 @@
             if ($node.hasClass('js-inline-comment-form') || $node.find('.js-inline-comment-form').length > 0) {
               const $copilotEntry = $node.closest('copilot-diff-entry');
               if ($copilotEntry.length > 0) {
-                $copilotEntry.addClass('has-comment-form');
-              }
-            }
-            
-            // Check if expanded lines are being added (tr elements in diff table)
-            if ($node.is('tr') || $node.find('tr').length > 0) {
-              const $copilotEntry = $node.closest('copilot-diff-entry');
-              if ($copilotEntry.length > 0 && $copilotEntry.css('display') === 'flex') {
-                // Temporarily add class to handle expand operations
-                $copilotEntry.addClass('has-expanded-lines');
+                // Store original styles for files in this entry
+                const $files = $copilotEntry.find('[data-details-container-group="file"]');
+                $files.each(function() {
+                  const $f = $(this);
+                  if (!$f.data('original-flex')) {
+                    $f.data('original-flex', $f.css('flex'));
+                    $f.data('original-max-width', $f.css('max-width'));
+                  }
+                });
                 
-                // Remove after content has settled
-                setTimeout(() => {
-                  $copilotEntry.removeClass('has-expanded-lines');
-                }, 500);
+                // Add class and adjust styles
+                $copilotEntry.addClass('has-comment-form');
+                $copilotEntry.css('display', 'block');
+                $files.css({
+                  'flex': '1 1 100%',
+                  'max-width': '100%'
+                });
               }
             }
           }
@@ -552,6 +554,17 @@
                 setTimeout(() => {
                   if ($copilotEntry.find('.js-inline-comment-form').length === 0) {
                     $copilotEntry.removeClass('has-comment-form');
+                    $copilotEntry.css('display', '');
+                    
+                    // Restore original styles
+                    const $files = $copilotEntry.find('[data-details-container-group="file"]');
+                    $files.each(function() {
+                      const $f = $(this);
+                      $f.css({
+                        'flex': $f.data('original-flex') || '',
+                        'max-width': $f.data('original-max-width') || ''
+                      });
+                    });
                   }
                 }, 100);
               }
@@ -579,13 +592,68 @@
       const $copilotEntry = $file.parents('copilot-diff-entry');
       
       if ($copilotEntry.length > 0) {
-        // Add class to temporarily disable flex layout
-        $copilotEntry.addClass('has-expanded-lines');
+        // Store original styles for the copilot entry
+        if (!$copilotEntry.data('original-display')) {
+          $copilotEntry.data('original-display', $copilotEntry.css('display'));
+        }
         
-        // Remove after a delay to allow content to load
-        setTimeout(() => {
-          $copilotEntry.removeClass('has-expanded-lines');
-        }, 1000);
+        // Store original styles for files
+        const $files = $copilotEntry.find('[data-details-container-group="file"]');
+        $files.each(function() {
+          const $f = $(this);
+          if (!$f.data('original-flex')) {
+            $f.data('original-flex', $f.css('flex'));
+            $f.data('original-max-width', $f.css('max-width'));
+            $f.data('original-width', $f.css('width'));
+          }
+        });
+        
+        // Temporarily disable flex layout and expand files
+        $copilotEntry.addClass('has-expanded-lines');
+        $copilotEntry.css('display', 'block');
+        $files.css({
+          'flex': 'none',
+          'max-width': 'none',
+          'width': '100%'
+        });
+        
+        // Force table layout recalculation
+        $file.find('table.diff-table').css('table-layout', 'auto');
+        
+        // Don't auto-restore - let it stay expanded
+        // The user can click collapse to restore
+      }
+    });
+    
+    // Handle collapse button
+    $(document).on('click', '.js-collapse-diff', function() {
+      const $button = $(this);
+      const $file = $button.closest('[data-details-container-group="file"]');
+      const $copilotEntry = $file.parents('copilot-diff-entry');
+      
+      if ($copilotEntry.length > 0) {
+        $copilotEntry.removeClass('has-expanded-lines');
+        
+        // Restore original layout
+        const originalDisplay = $copilotEntry.data('original-display');
+        if (originalDisplay) {
+          $copilotEntry.css('display', originalDisplay);
+        } else {
+          $copilotEntry.css('display', '');
+        }
+        
+        const $files = $copilotEntry.find('[data-details-container-group="file"]');
+        $files.each(function() {
+          const $f = $(this);
+          $f.css({
+            'flex': $f.data('original-flex') || '',
+            'max-width': $f.data('original-max-width') || '',
+            'width': $f.data('original-width') || ''
+          });
+        });
+        
+        // Reset table layout
+        $file.find('table.diff-table').css('table-layout', '');
       }
     });
   }
