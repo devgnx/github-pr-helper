@@ -57,21 +57,12 @@
     }).parents('[data-details-container-group="file"]');
 
     if ($actualFile.length) {
-      // Check if they're in the same copilot-diff-entry
-      const $actualEntry = $actualFile.parents('copilot-diff-entry');
-      const $testEntry = $testFile.parents('copilot-diff-entry');
-      
-      // Only move if they're in the same copilot-diff-entry container
-      if ($actualEntry.get(0) === $testEntry.get(0)) {
-        $testFile.insertAfter($actualFile);
-      }
-    }
-
-    highlightTestFile($testFile);
-    
-    // Only toggle expand if the file will be properly paired
-    if ($actualFile.length && $actualFile.parents('copilot-diff-entry').get(0) === $testFile.parents('copilot-diff-entry').get(0)) {
+      $testFile.insertAfter($actualFile);
+      highlightTestFile($testFile);
       toggleExpand($testFile);
+    } else {
+      // Standalone test file with no matching actual file - just highlight it
+      highlightTestFile($testFile);
     }
   }
 
@@ -91,55 +82,49 @@
 
     if (isTestFile($file)) {
       $testFile = $fileParent;
-      $actualFile = $testFile.prev();
+      $actualFile = $testFile.prev('[data-details-container-group="file"]');
     } else {
       $actualFile = $fileParent;
-      $testFile = $actualFile.next();
+      $testFile = $actualFile.next('[data-details-container-group="file"]');
     }
 
     // Validate that the files are actually related before pairing them
     const shouldPair = areFilesRelated($actualFile, $testFile);
 
-    const $copilotEntry = $actualFile.length > 0 
-      ? $actualFile.parents('copilot-diff-entry') 
-      : $testFile.parents('copilot-diff-entry');
-      
-    if ($copilotEntry.hasClass('overridden')) {
+    const $copilotEntry = $fileParent.parents('copilot-diff-entry');
+    
+    if ($copilotEntry.length === 0 || $copilotEntry.hasClass('overridden')) {
       return;
     }
 
-    $actualFile.toggleClass('wide');
-
-    let display = 'block';
-    let width = '100%';
-    if (shouldPair) {
-      display = 'flex';
-      width = '50%';
+    if ($actualFile.length > 0) {
+      $actualFile.toggleClass('wide');
     }
-
-    // Expand actual & test files
-    $copilotEntry.css({
-      display,
-      'flex-wrap': 'nowrap',
-      'gap': '10px',
-      'margin-left': '-22px',
-      'margin-right': '-22px'
-    });
 
     // Only apply flex styles if files should be paired
     if (shouldPair) {
+      // Expand actual & test files side by side
+      $copilotEntry.css({
+        display: 'flex',
+        'flex-wrap': 'nowrap',
+        'gap': '10px',
+        'margin-left': '-22px',
+        'margin-right': '-22px'
+      });
+
       $([$actualFile.get(0), $testFile.get(0)]).css({
-        'flex': `1 ${width}`,
-        'max-width': width
+        'flex': '1 50%',
+        'max-width': '50%'
       });
 
       // After basic toggle, check if we need to override for readability
       handleFullWidthOverride($copilotEntry);
     } else {
-      // Reset to full width for unpaired files
+      // Don't modify copilot-diff-entry for unpaired files, leave default behavior
+      // Just ensure the file itself isn't constrained
       $fileParent.css({
-        'flex': '1 100%',
-        'max-width': '100%'
+        'flex': '',
+        'max-width': ''
       });
     }
 
