@@ -57,11 +57,22 @@
     }).parents('[data-details-container-group="file"]');
 
     if ($actualFile.length) {
-      $testFile.insertAfter($actualFile);
+      // Check if they're in the same copilot-diff-entry
+      const $actualEntry = $actualFile.parents('copilot-diff-entry');
+      const $testEntry = $testFile.parents('copilot-diff-entry');
+      
+      // Only move if they're in the same copilot-diff-entry container
+      if ($actualEntry.get(0) === $testEntry.get(0)) {
+        $testFile.insertAfter($actualFile);
+      }
     }
 
     highlightTestFile($testFile);
-    toggleExpand($testFile);
+    
+    // Only toggle expand if the file will be properly paired
+    if ($actualFile.length && $actualFile.parents('copilot-diff-entry').get(0) === $testFile.parents('copilot-diff-entry').get(0)) {
+      toggleExpand($testFile);
+    }
   }
 
   function isTestFile($file) {
@@ -86,7 +97,13 @@
       $testFile = $actualFile.next();
     }
 
-    const $copilotEntry = $actualFile.parents('copilot-diff-entry');
+    // Validate that the files are actually related before pairing them
+    const shouldPair = areFilesRelated($actualFile, $testFile);
+
+    const $copilotEntry = $actualFile.length > 0 
+      ? $actualFile.parents('copilot-diff-entry') 
+      : $testFile.parents('copilot-diff-entry');
+      
     if ($copilotEntry.hasClass('overridden')) {
       return;
     }
@@ -95,33 +112,106 @@
 
     let display = 'block';
     let width = '100%';
-    if ($actualFile.length > 0 && $testFile.length > 0) {
+    if (shouldPair) {
       display = 'flex';
       width = '50%';
     }
 
     // Expand actual & test files
     $copilotEntry.css({
-      display,
+      display,// https://gist.github.com/devgnx/de133f345d43d8389b68e2116cdbeaba
+
+(function () {
+  function initialize() {
+    if (showOnlyCurrentCommits()) {
+      return;
+    }
+
+    // TODO: sum lines added & removed from .sr-only on each file (useful for mixed commits PR)
+    // i.e.: 4 changes: 2 additions & 2 deletions
+
+    // TODO: add only branch name in clipboard when clicking on 'copy branch name' button
+    // TODO: have a shortcut to switch between split & unifed diffs
+    // hide left side columns for new files or additions-only changes
+
+    waitLoading(() => {
+      loopFiles(function ($file) {
+        renderCommentCounters.call(this, $file);
+        openViewedWithComments.call(this, $file);
+        loadLargeDiff.call(this, $file).then(() => {
+          moveTests.call(this, $file);
+        });
+        hideLeftSideForAdditionsOnly.call(this, $file);
+      });
+
+      foldAll();
+      toggleDiffView();
+    })
+  }
+
+  function waitLoading(callback) {
+    let previousTimeout = setTimeout(() => {
+      clearTimeout(previousTimeout);
+      isStillLoading() ? waitLoading(callback) : callback();
+    }, 200);
+  }
+})();
       'flex-wrap': 'nowrap',
       'gap': '10px',
       'margin-left': '-22px',
       'margin-right': '-22px'
     });
 
-    $([$actualFile.get(0), $testFile.get(0)]).css({
-      'flex': `1 ${width}`,
-      'max-width': width
-    });
+    // Only apply flex styles if files should be paired
+    if (shouldPair) {
+      $([$actualFile.get(0), $testFile.get(0)]).css({
+        'flex': `1 ${width}`,
+        'max-width': width
+      });
 
-    // After basic toggle, check if we need to override for readability
-    if ($actualFile.length > 0 && $testFile.length > 0) {
+      // After basic toggle, check if we need to override for readability
       handleFullWidthOverride($copilotEntry);
+    } else {
+      // Reset to full width for unpaired files
+      $fileParent.css({
+        'flex': '1 100%',
+        'max-width': '100%'
+      });
     }
 
     setTimeout(() => {
       window.scrollTo(0, $fileParent.find('.js-file-content').offset().top - 60);
     });
+  }
+
+  function areFilesRelated($actualFile, $testFile) {
+    // Both must exist and be in the same copilot-diff-entry container
+    if ($actualFile.length === 0 || $testFile.length === 0) {
+      return false;
+    }
+
+    // Check if they're in the same copilot-diff-entry
+    const $actualParent = $actualFile.parents('copilot-diff-entry');
+    const $testParent = $testFile.parents('copilot-diff-entry');
+    if ($actualParent.get(0) !== $testParent.get(0)) {
+      return false;
+    }
+
+    // Check if the test file is actually a test file
+    if (!isTestFile($testFile.find('.Link--primary.Truncate-text'))) {
+      return false;
+    }
+
+    // Check if filenames are related
+    const actualFileName = getFileName($actualFile.find('.Link--primary.Truncate-text'));
+    const testFileName = getFileName($testFile.find('.Link--primary.Truncate-text'));
+    
+    // Extract base name from test file
+    const testBaseName = testFileName.split('/').slice(-2).join('/').replace(/(Test|\.test)(\.php|\.js)/g, '$2');
+    
+    // Check if actual file matches the test's base name
+    return (new RegExp(testBaseName, "i")).test(actualFileName) || 
+           (new RegExp(actualFileName.split('/').pop(), "i")).test(testFileName);
   }
 
   function handleFullWidthOverride($copilotEntry) {
