@@ -261,7 +261,7 @@
       (!hasLeftChanges && $rightCells.filter('.blob-code-addition').length > 0)) {
 
       // Remove all left side elements
-      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').remove();
+      $file.find('.blob-num.blob-num-empty.empty-cell, td.empty-cell.js-deletion, [data-split-side="left"]').remove();
 
       // For files with context lines, also remove left line numbers
       if (!allEmpty) {
