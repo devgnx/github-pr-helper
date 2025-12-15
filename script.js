@@ -19,7 +19,7 @@
         openViewedWithComments.call(this, $file);
         loadLargeDiff.call(this, $file).then(() => {
           hideLeftSideForAdditionsOnly.call(this, $file);
-          moveTests.call(this, $file);
+          handleTests.call(this, $file);
         });
       });
 
@@ -48,7 +48,7 @@
     return $file.find('[name="viewed"]').is(':checked');
   }
 
-  function moveTests($testFile) {
+  function handleTests($testFile) {
     if (!isTestFile($(this))) return;
 
     const actualFileName = getFileName($(this)).split('/').slice(-2).join('/').replace(/(Test|\.test)(\.php|\.js)/g, '$2');
@@ -56,9 +56,10 @@
       return (new RegExp(actualFileName, "i")).test($(this).attr('title'));
     }).parents('[data-details-container-group="file"]');
 
-    if ($actualFile.length) {
-      $testFile.insertAfter($actualFile);
-    }
+    // Disabling move test
+    // if ($actualFile.length) {
+    //   $testFile.insertAfter($actualFile);
+    // }
 
     highlightTestFile($testFile);
     toggleExpand($testFile);
@@ -87,7 +88,10 @@
     }
 
     // Validate that the files are actually related before pairing them
-    const shouldPair = areFilesRelated($actualFile, $testFile);
+    const shouldPair = false; 
+
+    // Disabling shouldPair, do not mess up with the files width
+    // const shouldPair = areFilesRelated($actualFile, $testFile);
 
     const $copilotEntry = $fileParent.parents('copilot-diff-entry');
     
@@ -149,11 +153,11 @@
       return false;
     }
 
-    // Check if filenames are related using the same logic as moveTests
+    // Check if filenames are related using the same logic as handleTests
     const actualFileName = getFileName($actualFile.find('.Link--primary.Truncate-text'));
     const testFileName = getFileName($testFile.find('.Link--primary.Truncate-text'));
     
-    // Use the same pattern matching as moveTests
+    // Use the same pattern matching as handleTests
     const expectedPattern = testFileName.split('/').slice(-2).join('/').replace(/(Test|\.test)(\.php|\.js)/g, '$2');
     return (new RegExp(expectedPattern, "i")).test(actualFileName);
   }
