@@ -330,7 +330,7 @@
   function handleNewComment() {
     $file = $(this).parents('[data-details-container-group="file"]');
     if (!$file.closest('copilot-diff-entry').hasClass('overridden')) {
-      $file.find('td.empty-cell.js-deletion').remove();
+      $file.find('td.empty-cell.js-deletion').hide();
     }
   }
 
