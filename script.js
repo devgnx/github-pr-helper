@@ -261,7 +261,7 @@
       (!hasLeftChanges && $rightCells.filter('.blob-code-addition').length > 0)) {
 
       // Remove all left side elements
-      $file.find('.blob-num.blob-num-empty.empty-cell, td.empty-cell.js-deletion, [data-split-side="left"]').remove();
+      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').remove();
 
       // For files with context lines, also remove left line numbers
       if (!allEmpty) {
@@ -325,6 +325,11 @@
       });
 
     $file.find('button.js-add-file-comment').append($commentCounter);
+  }
+
+  function handleNewComment() {
+    $file = $(this).parents('[data-details-container-group="file"]');
+    $file.find('td.empty-cell.js-deletion').remove();
   }
 
   function openViewedWithComments($file) {
@@ -666,6 +671,7 @@
     $(initialize);
     $(document).on('click', '.stale-files-tab-link', initialize);
     //$(document).on('click', '.tabnav-tab:contains("Files changed")', () => setTimeout(initialize, 2000));
+    $(document).on('click', '.btn-link.add-line-comment', handleNewComment);
     $(document).on('click', '[data-details-container-group="file"]', function (e) { e.ctrlKey && fold($(this)); });
     $(document).on('dblclick', '[data-details-container-group="file"] .file-header', function (e) { foldCurrent(e); });
     $(document).on("keydown", (e) => {
