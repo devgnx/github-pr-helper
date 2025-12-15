@@ -261,12 +261,12 @@
       (!hasLeftChanges && $rightCells.filter('.blob-code-addition').length > 0)) {
 
       // Remove all left side elements
-      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').remove();
+      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').hide();
 
       // For files with context lines, also remove left line numbers
       if (!allEmpty) {
         $file.find('.js-file-content tr').each(function () {
-          $(this).find('[data-line-number]+[data-line-number]').prev().remove(); // Remove left line number
+          $(this).find('[data-line-number]+[data-line-number]').prev().hide(); // Remove left line number
         });
       }
 
@@ -279,7 +279,7 @@
         $cells.each(function () {
           const $cell = $(this);
           if ($cell.html().trim() === '' && !$cell.hasClass('blob-code') && !$cell.hasClass('blob-num')) {
-            $cell.remove();
+            $cell.hide();
           }
         });
       });
@@ -301,9 +301,9 @@
 
       // Update table structure
       $file.find('.js-file-content thead tr').each(function () {
-        $(this).find('th, td').slice(0, 2).remove();
+        $(this).find('th, td').slice(0, 2).hide();
       });
-      $file.find('.diff-table colgroup col').slice(0, 2).remove();
+      $file.find('.diff-table colgroup col').slice(0, 2).hide();
       $file.find('.diff-table col:last-child').attr('width', '100%');
     }
   }
