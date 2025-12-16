@@ -261,12 +261,12 @@
       (!hasLeftChanges && $rightCells.filter('.blob-code-addition').length > 0)) {
 
       // Remove all left side elements
-      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').hide();
+      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').addClass('force-hidden');
 
       // For files with context lines, also remove left line numbers
       if (!allEmpty) {
         $file.find('.js-file-content tr').each(function () {
-          $(this).find('[data-line-number]+[data-line-number]').prev().hide(); // Remove left line number
+          $(this).find('[data-line-number]+[data-line-number]').prev().addClass('force-hidden'); // Remove left line number
         });
       }
 
@@ -279,7 +279,7 @@
         $cells.each(function () {
           const $cell = $(this);
           if ($cell.html().trim() === '' && !$cell.hasClass('blob-code') && !$cell.hasClass('blob-num')) {
-            $cell.hide();
+            $cell.addClass('force-hidden');
           }
         });
       });
@@ -301,9 +301,9 @@
 
       // Update table structure
       $file.find('.js-file-content thead tr').each(function () {
-        $(this).find('th, td').slice(0, 2).hide();
+        $(this).find('th, td').slice(0, 2).addClass('force-hidden');
       });
-      $file.find('.diff-table colgroup col').slice(0, 2).hide();
+      $file.find('.diff-table colgroup col').slice(0, 2).addClass('force-hidden');
       $file.find('.diff-table col:last-child').attr('width', '100%');
     }
   }
@@ -330,7 +330,7 @@
   function handleNewComment() {
     $file = $(this).parents('[data-details-container-group="file"]');
     if (!$file.closest('copilot-diff-entry').hasClass('overridden')) {
-      $file.find('td.empty-cell.js-deletion').hide();
+      $file.find('td.empty-cell.js-deletion').addClass('force-hidden');
     }
   }
 
@@ -444,6 +444,11 @@
 
   // Inject CSS styles for the script functionality
   injectCss(`
+    /* Force hide elements - use !important to override any other styles */
+    .force-hidden {
+      display: none !important;
+    }
+    
     copilot-diff-entry.overridden {
       position: relative;
     }
