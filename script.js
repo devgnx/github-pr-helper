@@ -446,7 +446,10 @@
   injectCss(`
     /* Force hide elements - use !important to override any other styles */
     .force-hidden {
-      display: none !important;
+      /*display: none !important;*/
+      position: absolute;
+      z-index: -999;
+      opacity: 0;
     }
     
     copilot-diff-entry.overridden {
