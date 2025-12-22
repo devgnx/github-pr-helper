@@ -260,13 +260,29 @@
     if ((allEmpty && $file.find('.blob-num.blob-num-empty.empty-cell').length > 0) ||
       (!hasLeftChanges && $rightCells.filter('.blob-code-addition').length > 0)) {
 
+      // Check if the file has ANY deletions (red rows)
+      const hasDeletions = $file.find('.blob-code-deletion').length > 0;
+      
+      // Decide whether to remove from DOM or just hide with class
+      const hideMethod = hasDeletions ? 'addClass' : 'remove';
+      const hideArg = hasDeletions ? 'force-hidden' : undefined;
+
       // Remove all left side elements
-      $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').addClass('force-hidden');
+      if (hideMethod === 'remove') {
+        $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').remove();
+      } else {
+        $file.find('.blob-num.blob-num-empty.empty-cell, [data-split-side="left"]').addClass(hideArg);
+      }
 
       // For files with context lines, also remove left line numbers
       if (!allEmpty) {
         $file.find('.js-file-content tr').each(function () {
-          $(this).find('[data-line-number]+[data-line-number]').prev().addClass('force-hidden'); // Remove left line number
+          const $leftLineNum = $(this).find('[data-line-number]+[data-line-number]').prev();
+          if (hideMethod === 'remove') {
+            $leftLineNum.remove();
+          } else {
+            $leftLineNum.addClass(hideArg);
+          }
         });
       }
 
@@ -279,7 +295,11 @@
         $cells.each(function () {
           const $cell = $(this);
           if ($cell.html().trim() === '' && !$cell.hasClass('blob-code') && !$cell.hasClass('blob-num')) {
-            $cell.addClass('force-hidden');
+            if (hideMethod === 'remove') {
+              $cell.remove();
+            } else {
+              $cell.addClass(hideArg);
+            }
           }
         });
       });
@@ -289,7 +309,7 @@
 
       // Set proper widths for remaining cells
       $file.find('.js-file-content tr').each(function () {
-        const $cells = $(this).find('td');
+        const $cells = $(this).find('td:visible, td:not(.force-hidden)');
         if ($cells.length === 2) {
           $cells.eq(0).css('width', '50px');
           $cells.eq(1).css('width', 'calc(100% - 50px)');
@@ -301,9 +321,21 @@
 
       // Update table structure
       $file.find('.js-file-content thead tr').each(function () {
-        $(this).find('th, td').slice(0, 2).addClass('force-hidden');
+        const $headerCells = $(this).find('th, td').slice(0, 2);
+        if (hideMethod === 'remove') {
+          $headerCells.remove();
+        } else {
+          $headerCells.addClass(hideArg);
+        }
       });
-      $file.find('.diff-table colgroup col').slice(0, 2).addClass('force-hidden');
+      
+      const $colgroupCols = $file.find('.diff-table colgroup col').slice(0, 2);
+      if (hideMethod === 'remove') {
+        $colgroupCols.remove();
+      } else {
+        $colgroupCols.addClass(hideArg);
+      }
+      
       $file.find('.diff-table col:last-child').attr('width', '100%');
     }
   }
@@ -330,7 +362,14 @@
   function handleNewComment() {
     $file = $(this).parents('[data-details-container-group="file"]');
     if (!$file.closest('copilot-diff-entry').hasClass('overridden')) {
-      $file.find('td.empty-cell.js-deletion').addClass('force-hidden');
+      // Check if the file has ANY deletions (red rows)
+      const hasDeletions = $file.find('.blob-code-deletion').length > 0;
+      
+      if (hasDeletions) {
+        $file.find('td.empty-cell.js-deletion').addClass('force-hidden');
+      } else {
+        $file.find('td.empty-cell.js-deletion').remove();
+      }
     }
   }
 
